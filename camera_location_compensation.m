@@ -1,4 +1,4 @@
-function [pupils, et] = camera_location_compensation(et, calib_data)
+function [et, pupils] = camera_location_compensation(et, pupils)
 %  camera_location_compensation  Compensate the influence of eye camera location
 %  in different position in the eye tracker setup
 
@@ -21,13 +21,12 @@ function [pupils, et] = camera_location_compensation(et, calib_data)
 
     % Calibration data
     N = size(et.calib_points, 2);
-    pupils = ones(3, N);
     targets = ones(3, N);
 
     % Second-order polynomial
     X = ones(6, N);
     for i=1:N
-        pc = calib_data{i}.camimg{1}.pc;
+        pc = pupils(:, i);
         X(:, i) = [pc(1)^2 pc(2)^2 pc(1)*pc(2) pc(1) pc(2) 1]';
     end
 
@@ -44,7 +43,7 @@ function [pupils, et] = camera_location_compensation(et, calib_data)
     for i=1:N
 
         % Get the pupil center for each calibration point and normalize it
-        pc = calib_data{i}.camimg{1}.pc;
+        pc = pupils(:, i);
         pc = et.state.Ten * [pc(1)^2 pc(2)^2 pc(1)*pc(2) pc(1) pc(2) 1]';
 
         pupils(:, i) = [pc(1:2); 1];

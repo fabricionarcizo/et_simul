@@ -61,7 +61,7 @@ function et = homography_calib(et, calib_data)
 
     % Eye camera location compensation method.
     if (~isempty(is_compensated) && is_compensated)
-        [pupils, et] = camera_location_compensation(et, calib_data);
+        [et, pupils] = camera_location_compensation(et, pupils);
     end
 
     % Determine the coefficients of the calibration function by solving
