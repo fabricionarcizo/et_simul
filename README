@@ -1,0 +1,27 @@
+et_simul, version 1.01, 19 March 2008
+-------------------------------------
+
+This is et_simul, a framework for simulating eye trackers. For more
+information, see the et_simul.tex and et_simul.pdf files in the 'doc'
+subdirectory.
+
+et_simul is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License (version 3) as
+published by the Free Software Foundation.
+
+et_simul is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+(version 3) along with et_simul in a file called 'COPYING'. If not, see
+<http://www.gnu.org/licenses/>.
+
+
+Contact information
+-------------------
+
+Martin Böhme
+University of Lübeck, Germany
+boehme@inb.uni-luebeck.de

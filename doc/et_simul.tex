@@ -1,0 +1,335 @@
+\documentclass{scrartcl}
+
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{mathdots}
+\usepackage{url}
+
+\title{et\_simul -- A Framework for Simulating Eye~Trackers}
+\author{Martin B\"ohme \\
+University of L\"ubeck, Germany \\
+\texttt{boehme@inb.uni-luebeck.de}}
+\date{}
+
+\setlength\LTleft\parindent
+\setlength\LTright\fill
+\setlength\LTpre\smallskipamount
+\setlength\LTpost\smallskipamount
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+This is et\_simul, a framework for simulating eye trackers -- in particular,
+the gaze estimation step. For a paper describing the framework and some
+experiments performed using it, see~\cite{BoDoGrMaBa08}.
+
+To get started, start \texttt{interpolate\_test.m} (which tests a simple
+interpolation-based algorithm) from a Matlab command line. 
+
+The project uses a pseudo-object-oriented philosophy, i.e.\ Matlab structures
+are used to represent the various objects in the system (eyes, lights,
+cameras), and methods are implemented as functions that take the object they
+operate on as their first argument. The name of a method should start with the
+name of the type of object it operates on (e.g.\ \texttt{eye\_look\_at()},
+\texttt{camera\_project()}); methods that create objects (``constructors'') 
+have the suffix \texttt{\_make} (e.g.\ \texttt{eye\_make()}, 
+\texttt{camera\_make()}).
+
+\section{Geometric conventions}
+
+The following conventions are used in geometrical calculations:
+
+\begin{itemize}
+\item All points and vectors are represented in homogeneous coordinates
+
+\item All vectors are column vectors
+
+\item All coordinate systems are right-handed:
+
+\vspace{1em}
+\includegraphics{coordinate_system.eps}
+\vspace{1em}
+
+  Note: For a camera whose image plane is the x-y-plane, this would mean that
+  its optical axis points along the \emph{negative} z-axis.
+
+\item All measurements are in metres
+
+\item Object transformation matrices always transform object coordinates to 
+  world coordinates.
+
+  Rationale: Consider a transformation matrix of the following form
+
+\[
+\left(
+\begin{array}{cccc}
+\ddots &   &  \iddots & \vdots \\
+  & A &   & d \\
+\iddots  &   & \ddots & \vdots \\
+0 & 0 & 0 & 1
+\end{array}
+\right)
+\]
+
+  Then $d$ is just the position of the object in world coordinates; and to
+  rotate an object around the centre of its local coordinate system by a
+  matrix $B$, we just concatenate $B$ onto $A$.
+\end{itemize}
+
+\section{A Short Example}
+
+The following short example is designed to introduce some of the functions in
+the framework. The source files for the functions contain more detailed
+documentation.
+
+The example code can also be run using the file \texttt{example.m}.
+
+To begin with, we will run a test of a simple interpolation-based gaze
+estimation method:
+
+\begin{verbatim}
+interpolate_test();
+\end{verbatim}
+
+The test requires a few moments to run; when it is finished, it shows a plot
+that visualizes the relative magnitude and direction of the error at different
+positions of the screen. Note that the size of the error arrows is not to the
+same scale as the screen coordinates.
+
+\subsection*{Eye, light, and camera objects}
+
+As mentioned above, the framework follows an object-oriented philosophy. An
+eye object, for example, is created like this:
+
+\begin{verbatim}
+e=eye_make(7.98e-3, [1 0 0; 0 0 1; 0 1 0]);
+\end{verbatim}
+
+The eye has a corneal radius of 7.98~mm and its optical axis points along 
+the negative y-axis. (In the eye's local coordinate system, the optical axis
+points along the negative z-axis. By specifying an eye-to-world transformation
+matrix that exchanges the y- and z-axis, we make the optical axis of the eye
+point along the negative y-axis of the world coordinate system.)
+
+We now position the centre of the eye at $(x, y, z)=(0, 0.5, 0.2)$ (all
+coordinates in metres):
+
+\begin{verbatim}
+e.trans(1:3, 4)=[0 500e-3 200e-3]';
+\end{verbatim}
+
+Note that we use the subscript \texttt{(1:3, 4)} to access the position 
+vector in the transformation matrix (denoted by $d$ in the previous section).
+
+Next, we will create a light and set its position to (0.2, 0, 0):
+
+\begin{verbatim}
+l=light_make();
+l.pos=[200e-3 0 0 1]';
+\end{verbatim}
+
+Because lights are modelled as perfect point light sources, they do not have
+an orientation, and hence they do not need a full transformation matrix; only
+the position has to be specified.
+
+We also create a camera:
+
+\begin{verbatim}
+c=camera_make();
+\end{verbatim}
+
+In its local coordinate system, the camera points out along the negative
+z-axis. We want to change the camera's orientation so that it points along the
+positive y-axis, towards the eye:
+
+\begin{verbatim}
+c.trans(1:3,1:3)=[1 0 0; 0 0 -1; 0 1 0];
+\end{verbatim}
+
+By default, the camera is positioned at the origin of the world coordinate
+system; we leave this default unchanged.
+
+\subsection*{Visualizing an eye tracking setup}
+
+We can now visualize our eye tracking setup:
+
+\begin{verbatim}
+draw_scene(c, l, e);
+\end{verbatim}
+
+This draws a three-dimensional representation of the following:
+
+\begin{itemize}
+\item The camera (the camera's view vector and the axes of its image plane)
+
+\item The light (shown as a red circle)
+
+\item The eye (showing the surface of the cornea, the pupil centre, the
+cornea's centre of curvature, and the CRs)
+\end{itemize}
+
+Cell arrays containing more than one eye, light, or camera may also be passed
+to \texttt{draw\_scene}.
+
+\subsection*{Calculating positions of CRs}
+
+We now wish to calculate the position of the corneal reflex in space, defined
+as the position where the ray that emanates from the light and is reflected
+into the camera strikes the surface of the cornea:
+
+\begin{verbatim}
+cr=eye_find_cr(e, l, c);
+\end{verbatim}
+
+We can now determine the position of the CR in the camera image:
+
+\begin{verbatim}
+cr_img=camera_project(c, cr);
+\end{verbatim}
+
+In reality, the position of features in a camera image cannot be determined
+with infinite accuracy. To model this, a so-called \emph{camera error} can be
+introduced. This simply causes \texttt{camera\_project} to offset the point in
+the camera image by a small random amount. For example, the following
+specifies a Gaussian camera error with a standard deviation of 0.5 pixels:
+
+\begin{verbatim}
+c.err=0.5;
+c.err_type='gaussian';
+\end{verbatim}
+
+Note that the camera error is a property of the camera. By default, the camera
+error is set to zero.
+
+\subsection*{Eye tracker object}
+
+An eye tracker is represented by an eye tracker object, which has the
+following properties:
+
+\begin{itemize}
+\item A cell array \texttt{cameras} of one or several camera objects.
+
+\item A cell array \texttt{lights} of one or several light objects.
+
+\item A matrix \texttt{calib\_points} of calibration points.
+
+\item A function handle \texttt{calib\_func} for the calibration function,
+which is supplied with the observed positions of the pupil centre and CRs for
+every calibration point and uses this information to calibrate the eye
+tracker.
+
+\item A function handle \texttt{eval\_func} for the evaluation function, which
+is used to perform gaze measurements after calibration. It is supplied with
+the observed positions of the pupil centre and CRs and outputs the gaze
+position on the screen.
+\end{itemize}
+
+For more information, see the documentation in \texttt{et\_calib}.
+
+The function \texttt{interpolate\_make} creates an eye tracker that uses a
+simple interpolation-based gazed estimation scheme. The eye tracker can be
+tested directly using the test harness \texttt{test\_over\_screen}:
+
+\begin{verbatim}
+test_over_screen(interpolate_make());
+\end{verbatim}
+
+\section{Functions}
+
+This function summarizes the most important functions in the framework.
+Detailed documentation for the functions can be found in the Matlab source
+files.
+
+\subsection*{Eye functions}
+
+\begin{longtable}{p{4cm}p{9.2cm}}
+\texttt{eye\_make} & Creates a structure that represents an eye \\
+\texttt{eye\_draw} & Draws a graphical representation of an eye \\
+\texttt{eye\_find\_cr} & Finds the position of a corneal reflex \\
+\texttt{eye\_find\_refraction} & Computes observed position of intraocular
+    objects \\
+\texttt{eye\_get\_pupil\_image} & Computes image of pupil boundary \\
+\texttt{eye\_get\_pupil} & Returns an array of points describing the pupil
+    boundary \\
+\texttt{eye\_look\_at} & Rotates an eye to look at a given position in 
+    space \\
+\texttt{eye\_refract\_ray} & Computes refraction of ray at cornea surface
+\end{longtable}
+
+\subsection*{Light functions}
+
+\begin{longtable}{p{4cm}p{9.2cm}}
+\texttt{light\_make} & Creates a structure that represents a light \\
+\texttt{light\_draw} & Draws a graphical representation of a light
+\end{longtable}
+
+\subsection*{Camera functions}
+
+\begin{longtable}{p{4cm}p{9.2cm}}
+\texttt{camera\_make} & Creates a structure that represents a camera \\
+\texttt{camera\_draw} & Draws a graphical representation of a camera \\
+\texttt{camera\_pan\_tilt} & Pans and tilts a camera towards a certain
+    location \\
+\texttt{camera\_project} & Projects points in space onto the camera's image
+    plane \\
+\texttt{camera\_take\_image} & Computes the image of an eye seen by a 
+    camera \\
+\texttt{camera\_unproject} & Unprojects a point on the image plane back into
+    3D space
+\end{longtable}
+
+\subsection*{Optical helper functions}
+
+\begin{longtable}{p{4cm}p{9.2cm}}
+\texttt{reflect\_ray\_sphere} & Reflects ray on sphere \\
+\texttt{refract\_ray\_sphere} & Refracts ray at surface of sphere \\
+\texttt{find\_reflection} & Finds position of a glint on the surface of a
+    sphere \\
+\texttt{find\_refraction} & Computes image produced by refracting sphere
+\end{longtable}
+
+\subsection*{Test harnesses}
+
+\begin{longtable}{p{4cm}p{9.2cm}}
+\texttt{test\_over\_observer} & Computes gaze error at different observer
+    positions \\
+\texttt{test\_over\_screen} & Computes gaze error at different gaze positions
+    on screen
+\end{longtable}
+
+\subsection*{Preimplemented gaze estimation algorithms}
+
+\begin{longtable}{p{4cm}p{9.2cm}}
+\texttt{beymer\_*} & Method of Beymer and Flicker (2003) \\
+\texttt{interpolate\_*} & Simple interpolation-based method \\
+\texttt{shihwuliu\_*} & Method of Shih, Wu, and Liu (2000) \\
+\texttt{yoo\_*} & Method of Yoo and Chung (2005) \\
+\texttt{hennessey\_*} & Method of Hennessey, Noureddin, and Lawrence (2006)
+\end{longtable}
+
+\section{Legal Notice}
+
+et\_simul is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License (version 3) as
+published by the Free Software Foundation.
+
+et\_simul is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+(version 3) along with et\_simul in a file called `COPYING'. If not, see
+\url{http://www.gnu.org/licenses/}.
+
+
+\begin{thebibliography}{[1]}
+\bibitem{BoDoGrMaBa08}Martin B{\"o}hme, Michael Dorr, Mathis Graw, Thomas
+Martinetz, and Erhardt Barth. A Software Framework for Simulating Eye
+Trackers. \emph{Proceedings of Eye Tracking Research \& Applications (ETRA)},
+2008 (to appear).
+\end{thebibliography}
+
+\end{document}
