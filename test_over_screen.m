@@ -27,6 +27,9 @@ function errors=test_over_screen(et, observer_pos_calib, ...
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    % Global variables.
+    global is_compensated;
+
     if nargin<2
         observer_pos_calib=[0 550e-3 350e-3 1]';
     end
@@ -58,6 +61,11 @@ function errors=test_over_screen(et, observer_pos_calib, ...
 
     % Pupil center distribution
     figure(1);
+    if (~isempty(is_compensated) && is_compensated)
+        subplot(2, 1, 1);
+    else
+        subplot(1, 1, 1);
+    end
 
     distribution = zeros(N, N, 2);
     for i=1:length(X)
@@ -75,6 +83,25 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     end
 
     plot(distribution(:, :, 1), distribution(:, :, 2), '+');
+
+    % Compensate the pupil center distribution
+    if (~isempty(is_compensated) && is_compensated)
+        subplot(2, 1, 2);
+
+        for i=1:length(X)
+            for j=1:length(Y)
+
+                % Get the current pupil center
+                pc = reshape(distribution(i, j, :), [2, 1]);
+
+                % Compensate the current pupil center
+                pc = pupil_compensation(et, pc);
+                distribution(i, j, :) = pc(1:2);
+            end
+        end
+
+        plot(distribution(:, :, 1), distribution(:, :, 2), '+');
+    end
 
     % Show the epipolar geometry.
     epipolar_geometry(et, e);

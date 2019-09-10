@@ -22,6 +22,9 @@ function epipolar_geometry(et, e)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    % Global variables.
+    global is_compensated;
+
     % Seven is the minimum number of calibration targets to calculate the
     % epipolar geometry
     N = length(et.calib_points);
@@ -41,6 +44,11 @@ function epipolar_geometry(et, e)
 
             % Get the current pupil center
             pupils(1:2, i) = camimg.pc;
+
+            % Eye camera compensation method.
+            if (~isempty(is_compensated) && is_compensated)
+                pupils(:, i) = pupil_compensation(et, camimg.pc);
+            end
         end
 
         % Calculate the fundamental matrix (F)
