@@ -82,7 +82,7 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     fprintf('\n');
 
     % Plot gaze error
-    quiver(X, Y, U, V);
+    surf(X, Y, sqrt(U.^2+V.^2));
     errs_mtr=reshape(sqrt(U.^2+V.^2), 1, []);
     errors.mtr=compute_error_statistics(errs_mtr);
     errors.deg=compute_error_statistics(errs_deg(:));
@@ -91,9 +91,8 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     fprintf('Standard deviation %g mm\n', errors.mtr.std*1e3);
 
     title(sprintf(...
-        'Maximum error %.3g mm\tMean error %.3g mm\tStd dev %.3g mm', ...
-        errors.mtr.max*1e3, errors.mtr.mean*1e3, ...
-        errors.mtr.std*1e3));
+        'Maximum Error: %.2g° - Mean Error: %.2g° - Standard Deviation: %.2g°', ...
+        errors.deg.max, errors.deg.mean, errors.deg.std));
 
 function stats=compute_error_statistics(errs)
     stats.mean=mean(errs);
