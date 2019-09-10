@@ -18,7 +18,21 @@ function gaze = interpolate_eval(et, camimg)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
-    % Calculate the pupil-CR-vector
-    pcr = camimg{1}.pc-camimg{1}.cr{1};
+    % Global variables.
+    global is_compensated;
+    global is_glint_normalization;
 
-    gaze=et.state.A*[1 pcr(1) pcr(2) pcr(1)*pcr(2) pcr(1)^2 pcr(2)^2]';
+    % Get the current pupil center
+    pc = camimg{1}.pc;
+
+    % PCCR normalization.
+    if (isempty(is_glint_normalization) || is_glint_normalization)
+        pc = pc - camimg{1}.cr{1};
+    end
+
+    % Eye camera location compensation method.
+    if (~isempty(is_compensated) && is_compensated)
+        pc = pupil_compensation(et, pc);
+    end
+
+    gaze = et.state.A * [1 pc(1) pc(2) pc(1)*pc(2) pc(1)^2 pc(2)^2]';

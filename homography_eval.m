@@ -18,23 +18,35 @@ function gaze = homography_eval(et, camimg)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    % Global variables.
+    global is_compensated;
+    global is_glint_normalization;
+
     % Get the current pupil center.
-    pupil  = camimg{1}.pc;
+    pupil = camimg{1}.pc;
 
     % Homography normalization.
-    squared_unit = [0 1; 1 1; 1 0; 0 0]';
+    if (isempty(is_glint_normalization) || is_glint_normalization)
+        squared_unit = [0 1; 1 1; 1 0; 0 0]';
 
-    M = size(camimg{1}.cr, 1);
-    glints = zeros(2, M);
-    for j=1:M
-        glints(:, j) = camimg{1}.cr{j};
+        M = size(camimg{1}.cr, 1);
+        glints = zeros(2, M);
+        for j=1:M
+            glints(:, j) = camimg{1}.cr{j};
+        end
+
+        % Calculate the normalization matrix.
+        Hn = homography_solve(glints, squared_unit);
+
+        % Normalize the pupil center.
+        pupil = homography_transform(pupil(1:2), Hn);
+
     end
 
-    % Calculate the normalization matrix.
-    Hn = homography_solve(glints, squared_unit);
-
-    % Normalize the pupil center.
-    pupil = homography_transform(pupil(1:2), Hn);
+    % Eye camera location compensation method.
+    if (~isempty(is_compensated) && is_compensated)
+        pupil = pupil_compensation(et, pupil);
+    end
 
     % Gaze estimation.
     gaze = homography_transform(pupil(1:2), et.state.H);

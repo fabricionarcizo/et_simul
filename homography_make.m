@@ -20,12 +20,17 @@ function et=homography_make()
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    global eye_camera_position;
+
     et.calib_func=@homography_calib;
     et.eval_func=@homography_eval;
 
     % Create the camera
     et.cameras{1}=camera_make;
     et.cameras{1}.trans(1:3,1:3)=[1 0 0; 0 0 -1; 0 1 0];
+    if (~isempty(eye_camera_position))
+        et.cameras{1}.trans(1:3,4)=eye_camera_position;
+    end
     et.cameras{1}.rest_trans=et.cameras{1}.trans;
     et.cameras{1}.err=0.0;
     et.cameras{1}.err_type='gaussian';

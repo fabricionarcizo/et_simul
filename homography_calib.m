@@ -18,6 +18,10 @@ function et = homography_calib(et, calib_data)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    % Global variables.
+    global is_compensated;
+    global is_glint_normalization;
+
     % Calibration data.
     N = size(et.calib_points, 2);
     pupils = ones(3, N);
@@ -36,21 +40,28 @@ function et = homography_calib(et, calib_data)
     end
 
     % Homography normalization.
-    squared_unit = [0 1; 1 1; 1 0; 0 0]';
-    for i=1:N
+    if (isempty(is_glint_normalization) || is_glint_normalization)
+        squared_unit = [0 1; 1 1; 1 0; 0 0]';
+        for i=1:N
 
-        % Get the glints coordinates.
-        M = size(calib_data{i}.camimg{1}.cr, 1);
-        glints = zeros(2, M);
-        for j=1:M
-            glints(:, j) = calib_data{i}.camimg{1}.cr{j};
+            % Get the glints coordinates.
+            M = size(calib_data{i}.camimg{1}.cr, 1);
+            glints = zeros(2, M);
+            for j=1:M
+                glints(:, j) = calib_data{i}.camimg{1}.cr{j};
+            end
+
+            % Calculate the normalization matrix.
+            Hn = homography_solve(glints, squared_unit);
+
+            % Normalize the pupil center.
+            pupils(1:2, i) = homography_transform(pupils(1:2, i), Hn);
         end
+    end
 
-        % Calculate the normalization matrix.
-        Hn = homography_solve(glints, squared_unit);
-
-        % Normalize the pupil center.
-        pupils(1:2, i) = homography_transform(pupils(1:2, i), Hn);
+    % Eye camera location compensation method.
+    if (~isempty(is_compensated) && is_compensated)
+        [pupils, et] = camera_location_compensation(et, calib_data);
     end
 
     % Determine the coefficients of the calibration function by solving

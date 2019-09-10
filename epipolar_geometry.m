@@ -1,4 +1,26 @@
 function epipolar_geometry(et, e) 
+%  epipolar_geometry  Computes the epipolar geometry of the calibration data
+%    epipolar_geometry(et, e) calculates the epipolar geometry between the
+%    pupils and the calibration targets and vice-versa. Assuming the eye and the
+%    screen/scene as a stereo vision system, we can estimate the eye camera
+%    location (i.e. the epipole) using the epipolar geometry.
+
+%    Copyright 2019 Fabricio Batista Narcizo and the IT University of Copenhagen
+%
+%    This file is part of eyeinfo_simul.
+%
+%    eyeinfo_simul is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License (version 3) as
+%    published by the Free Software Foundation.
+%
+%    eyeinfo_simul is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    (version 3) along with et_simul in a file called 'COPYING'. If not, see
+%    <http://www.gnu.org/licenses/>.
 
     % Seven is the minimum number of calibration targets to calculate the
     % epipolar geometry

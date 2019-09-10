@@ -18,11 +18,45 @@ function et = interpolate_calib(et, calib_data)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    % Global variables.
+    global is_compensated;
+    global is_glint_normalization;
+
+    % Calibration data.
+    N = size(et.calib_points, 2);
+    pupils = ones(3, N);
+    targets = ones(3, N);
+    X = ones(6, N);
+
+    % Fill out the pupils matrix and targets matrix.
+    for i=1:N
+
+        % Get the pupil center for each calibration point to calculate the
+        % homography matrix
+        pc = calib_data{i}.camimg{1}.pc;
+        pupils(:, i) = [pc(1:2); 1];
+
+        % Get the current calibration target coordinates.
+        targets(1:2, i) = et.calib_points(:, i);
+    end
+
+    % PCCR normalization.
+    if (isempty(is_glint_normalization) || is_glint_normalization)
+        for i=1:N
+            pupils(1:2, i) = pupils(1:2, i) - calib_data{i}.camimg{1}.cr{1};
+        end
+    end
+
+    % Eye camera location compensation method.
+    if (~isempty(is_compensated) && is_compensated)
+        [pupils, et] = camera_location_compensation(et, calib_data);
+    end
+
     for i=1:size(et.calib_points, 2)
         % Calculate the pupil-CR-vector for each calibration point and 
         % build the interpolation matrix
-        pcr = calib_data{i}.camimg{1}.pc-calib_data{i}.camimg{1}.cr{1};
-        X(:,i) = [1 pcr(1) pcr(2) pcr(1)*pcr(2) pcr(1)^2 pcr(2)^2]';
+        pc = pupils(:, i);
+        X(:,i) = [1 pc(1) pc(2) pc(1)*pc(2) pc(1)^2 pc(2)^2]';
     end
 
     % Determine the coefficients of the calibration function by solving
