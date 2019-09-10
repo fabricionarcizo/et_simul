@@ -76,6 +76,9 @@ function errors=test_over_screen(et, observer_pos_calib, ...
 
     plot(distribution(:, :, 1), distribution(:, :, 2), '+');
 
+    % Show the epipolar geometry.
+    epipolar_geometry(et, e);
+
     % Output eye measurements
     fprintf('Corneal radius: %.3g mm\n',...
         norm(e.pos_apex-e.pos_cornea)*1e3);
@@ -102,7 +105,7 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     fprintf('\n');
 
     % Plot gaze error
-    figure(2);
+    figure(3);
     surf(X, Y, sqrt(U.^2+V.^2));
     errs_mtr=reshape(sqrt(U.^2+V.^2), 1, []);
     errors.mtr=compute_error_statistics(errs_mtr);
