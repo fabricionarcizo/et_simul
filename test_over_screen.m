@@ -56,6 +56,26 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     V=zeros(N);
     errs_deg=zeros(N);
 
+    % Pupil center distribution
+    figure(1);
+
+    distribution = zeros(N, N, 2);
+    for i=1:length(X)
+        for j=1:length(Y)
+
+            % Look at a target on the screen
+            e=eye_look_at(e, [X(i) 0 Y(j) 1]');
+
+            % Take a photo from the eye
+            camimg = camera_take_image(et.cameras{1}, e, et.lights);
+
+            % Get the current pupil center
+            distribution(i, j, :) = camimg.pc;
+        end
+    end
+
+    plot(distribution(:, :, 1), distribution(:, :, 2), '+');
+
     % Output eye measurements
     fprintf('Corneal radius: %.3g mm\n',...
         norm(e.pos_apex-e.pos_cornea)*1e3);
@@ -82,6 +102,7 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     fprintf('\n');
 
     % Plot gaze error
+    figure(2);
     surf(X, Y, sqrt(U.^2+V.^2));
     errs_mtr=reshape(sqrt(U.^2+V.^2), 1, []);
     errors.mtr=compute_error_statistics(errs_mtr);
