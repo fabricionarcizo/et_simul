@@ -29,6 +29,7 @@ function errors=test_over_screen(et, observer_pos_calib, ...
 
     % Global variables.
     global is_compensated;
+    global is_undistorted;
 
     if nargin<2
         observer_pos_calib=[0 550e-3 350e-3 1]';
@@ -64,7 +65,11 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     if (~isempty(is_compensated) && is_compensated)
         subplot(2, 1, 1);
     else
-        subplot(1, 1, 1);
+        if (~isempty(is_undistorted) && is_undistorted)
+            subplot(2, 2, [1 2]);
+        else
+            subplot(1, 1, 1);
+        end
     end
 
     distribution = zeros(N, N, 2);
@@ -88,6 +93,10 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     if (~isempty(is_compensated) && is_compensated)
         subplot(2, 1, 2);
 
+        if (~isempty(is_undistorted) && is_undistorted)
+            subplot(2, 2, 3);
+        end
+
         for i=1:length(X)
             for j=1:length(Y)
 
@@ -96,6 +105,26 @@ function errors=test_over_screen(et, observer_pos_calib, ...
 
                 % Compensate the current pupil center
                 pc = pupil_compensation(et, pc);
+                distribution(i, j, :) = pc(1:2);
+            end
+        end
+
+        plot(distribution(:, :, 1), distribution(:, :, 2), '+');
+    end
+
+    % Compensate the pupil distortion
+    if (~isempty(is_undistorted) && is_undistorted)
+        subplot(2, 2, 4);
+
+        for i=1:length(X)
+            for j=1:length(Y)
+
+                % Get the current pupil center
+                pc = reshape(distribution(i, j, :), [2, 1]);
+
+                % Compensate the current pupil distortion
+                pc = undistort_pupil(et, pc);
+
                 distribution(i, j, :) = pc(1:2);
             end
         end

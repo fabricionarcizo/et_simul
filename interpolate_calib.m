@@ -20,6 +20,7 @@ function et = interpolate_calib(et, calib_data)
 
     % Global variables.
     global is_compensated;
+    global is_undistorted;
     global is_glint_normalization;
 
     % Calibration data.
@@ -50,6 +51,19 @@ function et = interpolate_calib(et, calib_data)
     % Eye camera location compensation method.
     if (~isempty(is_compensated) && is_compensated)
         [et, pupils] = camera_location_compensation(et, pupils);
+    end
+    
+    % Eye feature distortion compensation method.
+    if (~isempty(is_undistorted) && is_undistorted)
+        squared_unit = ones(3, N);
+        squared_unit(1, 1:3:N) = -1;
+        squared_unit(1, 2:3:N) = 0;
+        squared_unit(2, 1:3) = -1;
+        squared_unit(2, 4:6) = 0;
+
+        et = calculate_distortion(et, pupils, squared_unit);
+
+        pupils = undistort_pupil(et, pupils);
     end
 
     for i=1:size(et.calib_points, 2)

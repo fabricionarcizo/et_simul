@@ -20,6 +20,7 @@ function et = homography_calib(et, calib_data)
 
     % Global variables.
     global is_compensated;
+    global is_undistorted;
     global is_glint_normalization;
 
     % Calibration data.
@@ -62,6 +63,21 @@ function et = homography_calib(et, calib_data)
     % Eye camera location compensation method.
     if (~isempty(is_compensated) && is_compensated)
         [et, pupils] = camera_location_compensation(et, pupils);
+    end
+
+    % Eye feature distortion compensation method.
+    if (~isempty(is_undistorted) && is_undistorted)
+        squared_unit = ones(3, N);
+        squared_unit(1, 1:3:9) = pupils(1, 4);
+        squared_unit(1, 2:3:9) = pupils(1, 5);
+        squared_unit(1, 3:3:9) = pupils(1, 6);
+        squared_unit(2, 1:3) = pupils(2, 2);
+        squared_unit(2, 4:6) = pupils(2, 5);
+        squared_unit(2, 7:9) = pupils(2, 8);
+        
+        et = calculate_distortion(et, pupils, squared_unit);
+
+        pupils = undistort_pupil(et, pupils);
     end
 
     % Determine the coefficients of the calibration function by solving

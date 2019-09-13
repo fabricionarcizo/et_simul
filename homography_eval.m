@@ -20,6 +20,7 @@ function gaze = homography_eval(et, camimg)
 
     % Global variables.
     global is_compensated;
+    global is_undistorted;
     global is_glint_normalization;
 
     % Get the current pupil center.
@@ -46,6 +47,11 @@ function gaze = homography_eval(et, camimg)
     % Eye camera location compensation method.
     if (~isempty(is_compensated) && is_compensated)
         pupil = pupil_compensation(et, pupil);
+    end
+
+    % Eye feature distortion compensation method.
+    if (~isempty(is_undistorted) && is_undistorted)
+        pupil = undistort_pupil(et, pupil);
     end
 
     % Gaze estimation.

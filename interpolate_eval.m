@@ -20,6 +20,7 @@ function gaze = interpolate_eval(et, camimg)
 
     % Global variables.
     global is_compensated;
+    global is_undistorted;
     global is_glint_normalization;
 
     % Get the current pupil center
@@ -33,6 +34,11 @@ function gaze = interpolate_eval(et, camimg)
     % Eye camera location compensation method.
     if (~isempty(is_compensated) && is_compensated)
         pc = pupil_compensation(et, pc);
+    end
+
+    % Eye feature distortion compensation method.
+    if (~isempty(is_undistorted) && is_undistorted)
+        pc = undistort_pupil(et, pc);
     end
 
     gaze = et.state.A * [1 pc(1) pc(2) pc(1)*pc(2) pc(1)^2 pc(2)^2]';

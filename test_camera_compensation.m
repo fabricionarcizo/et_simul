@@ -1,4 +1,4 @@
-function test_camera_compensation(method, undistort)
+function test_camera_compensation(method, compensate, undistort)
 %  test_camera_compensation  Tests the eye camera location compensation method
 %    test_camera_compensation(method) tests the proposed eye camera location
 %    compensation method to reduce the influence of eye camera location in the
@@ -32,7 +32,7 @@ function test_camera_compensation(method, undistort)
     global eye_camera_position;
     global is_glint_normalization;
 
-    is_compensated = true;
+    is_compensated = false;
     is_undistorted = false;
 
     % Adjust the arguments.
@@ -40,14 +40,20 @@ function test_camera_compensation(method, undistort)
         method='homography_test';
     end
 
-    if (nargin == 2)
+    if (nargin > 1)
+        if (strcmp(compensate, 'on'))
+            is_compensated = true;
+        end
+    end
+
+    if (nargin > 2)
         if (strcmp(undistort, 'on'))
             is_undistorted = true;
         end
     end
 
     % Define the eye camera location in the world coordinate system.
-    eye_camera_position = [0e-3 450e-3 150e-3];
+    %eye_camera_position = [0e-3 450e-3 150e-3];
 
     % Remove the glint normalization.
     is_glint_normalization = false;
