@@ -22,6 +22,14 @@ function gaze = interpolate_eval(et, camimg)
     global is_compensated;
     global is_undistorted;
     global is_glint_normalization;
+    global polynomial;
+
+    % Get the polynomial equation.
+    if (~isempty(polynomial))
+        equation = polynomial;
+    else
+        equation = @(x, y) [1 x y x*y x^2 y^2]';
+    end
 
     % Get the current pupil center
     pc = camimg{1}.pc;
@@ -41,4 +49,16 @@ function gaze = interpolate_eval(et, camimg)
         pc = undistort_pupil(et, pc);
     end
 
-    gaze = et.state.A * [1 pc(1) pc(2) pc(1)*pc(2) pc(1)^2 pc(2)^2]';
+    % Gaze estimation.
+    result = equation(pc(1), pc(2));
+    D= size(result, 2);
+
+    if (D == 1)
+        gaze = et.state.A * result;
+    else
+        gaze = [];
+        for i = 1:D
+            row = et.state.A(i, :) * result(:, i);
+            gaze = [gaze; row];
+        end
+    end

@@ -22,15 +22,26 @@ function et = interpolate_calib(et, calib_data)
     global is_compensated;
     global is_undistorted;
     global is_glint_normalization;
+    global polynomial;
+
+    % Get the polynomial equation.
+    if (~isempty(polynomial))
+        equation = polynomial;
+    else
+        equation = @(x, y) [1 x y x*y x^2 y^2]';
+    end
+
+    % Calculate the matrices sizes.
+    N = size(et.calib_points, 2);
+    [M, D] = size(equation(1, 1));
 
     % Calibration data.
-    N = size(et.calib_points, 2);
     pupils = ones(3, N);
     targets = ones(3, N);
-    X = ones(6, N);
+    X = ones(M, N, D);
 
     % Fill out the pupils matrix and targets matrix.
-    for i=1:N
+    for i = 1:N
 
         % Get the pupil center for each calibration point to calculate the
         % homography matrix
@@ -43,7 +54,7 @@ function et = interpolate_calib(et, calib_data)
 
     % PCCR normalization.
     if (isempty(is_glint_normalization) || is_glint_normalization)
-        for i=1:N
+        for i = 1:N
             pupils(1:2, i) = pupils(1:2, i) - calib_data{i}.camimg{1}.cr{1};
         end
     end
@@ -66,13 +77,21 @@ function et = interpolate_calib(et, calib_data)
         pupils = undistort_pupil(et, pupils);
     end
 
-    for i=1:size(et.calib_points, 2)
+    for i = 1:size(et.calib_points, 2)
         % Calculate the pupil-CR-vector for each calibration point and 
         % build the interpolation matrix
         pc = pupils(:, i);
-        X(:,i) = [1 pc(1) pc(2) pc(1)*pc(2) pc(1)^2 pc(2)^2]';
+        X(:,i,:) = equation(pc(1), pc(2));
     end
 
     % Determine the coefficients of the calibration function by solving
     % the linear equations
-    et.state.A=et.calib_points/X;
+    if (D == 1)
+        et.state.A = et.calib_points / X;
+    else
+        et.state.A = [];
+        for i=1:D
+            row = et.calib_points(i, :) / X(:, :, i);
+            et.state.A = [et.state.A; row];
+        end
+    end
