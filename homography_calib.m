@@ -1,5 +1,5 @@
 function et = homography_calib(et, calib_data)
-%  interpolate_calib  Calibration function for homography transformation
+%  homography_calib  Calibration function for homography transformation
 
 %    Copyright 2019 Fabricio Batista Narcizo and the IT University of Copenhagen
 %

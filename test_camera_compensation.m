@@ -30,6 +30,7 @@ function test_camera_compensation(method, compensate, undistort)
     global is_compensated;
     global is_undistorted;
     global eye_camera_position;
+    global user_position;
     global is_glint_normalization;
 
     is_compensated = false;
@@ -54,6 +55,10 @@ function test_camera_compensation(method, compensate, undistort)
 
     % Define the eye camera location in the world coordinate system.
     %eye_camera_position = [0e-3 450e-3 150e-3];
+    %eye_camera_position = [0e-3 0e-3 200e-3];
+
+    % Define the user location in the world coordinate system.
+    user_position = [0 550e-3 350e-3 1]';
 
     % Remove the glint normalization.
     is_glint_normalization = false;

@@ -1,17 +1,17 @@
-function gaze = interpolate_eval(et, camimg)
-%  interpolate_eval  Evaluation function for pupil-CR interpolation
+function gaze = hennessey_2d_eval(et, camimg)
+%  hennessey_2d_eval  Evaluation function for pupil-CR interpolation
 
-%    Copyright 2008 Martin Böhme and the University of Lübeck
+%    Copyright 2019 Fabricio Batista Narcizo and the IT University of Copenhagen
 %
-%    This file is part of et_simul.
+%    This file is part of eyeinfo_simul.
 %
-%    et_simul is free software: you can redistribute it and/or modify
+%    eyeinfo_simul is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License (version 3) as
 %    published by the Free Software Foundation.
 %
-%    et_simul is distributed in the hope that it will be useful,
+%    eyeinfo_simul is distributed in the hope that it will be useful,
 %    but WITHOUT ANY WARRANTY; without even the implied warranty of
-%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 %    GNU General Public License for more details.
 %
 %    You should have received a copy of the GNU General Public License
@@ -41,4 +41,4 @@ function gaze = interpolate_eval(et, camimg)
         pc = undistort_pupil(et, pc);
     end
 
-    gaze = et.state.A * [1 pc(1) pc(2) pc(1)*pc(2) pc(1)^2 pc(2)^2]';
+    gaze = et.state.A * [1 pc(1) pc(2) pc(1)*pc(2)]';
