@@ -32,6 +32,7 @@ function test_camera_compensation(method, compensate, undistort)
     global eye_camera_position;
     global user_position;
     global is_glint_normalization;
+    global polynomial;
 
     is_compensated = false;
     is_undistorted = false;
@@ -62,6 +63,15 @@ function test_camera_compensation(method, compensate, undistort)
 
     % Remove the glint normalization.
     is_glint_normalization = false;
+
+    % Define the polynomial used in the simulation.
+    %polynomial = @(x, y) [x*y x y 1]'; % Hennessey et al. (2008)
+    %polynomial = @(x, y) [x 1; y 1]'; % Hoorman et al. (2008)
+    polynomial = @(x, y) [x^2 y^2 x*y x y 1]'; % Cerrolaza et al. (2008)
+    %polynomial = @(x, y) [x^2*y^2 x^2 y^2 x*y x y 1]'; % Second-order
+    %polynomial = @(x, y) [x*y x y 1; y^2 x y 1]'; % Zhu and Ji (2005)
+    %polynomial = @(x, y) [x^2 x y 1 0; x^2*y x^2 x*y y 1]'; % Cerrolaza and Villanueva (2008).
+    %polynomial = @(x, y) [1 x x^3 y^2 x*y 0 0; 1 x x^2 y y^2 x*y x^2*y]'; % Blignaut and Wium (2013).
 
     % Execute the gaze estimation method.
     feval(method);
