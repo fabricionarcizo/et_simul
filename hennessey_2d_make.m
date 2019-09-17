@@ -1,19 +1,19 @@
-function et=interpolate_make()
-%  interpolate_make  Creates pupil-CR tracker with biquadratic interpolation
-%    et = interpolate_make() creates an eye tracker 'et' that uses biquadratic
+function et=hennessey_2d_make()
+%  hennessey_2d_make  Creates pupil-CR tracker with linear interpolation
+%    et = hennessey_2d_make() creates an eye tracker 'et' that uses linear
 %    interpolation from the pupil-CR difference vector to screen coordinates.
 
-%    Copyright 2008 Martin Böhme and the University of Lübeck
+%    Copyright 2019 Fabricio Batista Narcizo and the IT University of Copenhagen
 %
-%    This file is part of et_simul.
+%    This file is part of eyeinfo_simul.
 %
-%    et_simul is free software: you can redistribute it and/or modify
+%    eyeinfo_simul is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License (version 3) as
 %    published by the Free Software Foundation.
 %
-%    et_simul is distributed in the hope that it will be useful,
+%    eyeinfo_simul is distributed in the hope that it will be useful,
 %    but WITHOUT ANY WARRANTY; without even the implied warranty of
-%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 %    GNU General Public License for more details.
 %
 %    You should have received a copy of the GNU General Public License
@@ -24,8 +24,8 @@ function et=interpolate_make()
     global eye_camera_position;
     global user_position;
 
-    et.calib_func=@interpolate_calib;
-    et.eval_func=@interpolate_eval;
+    et.calib_func=@hennessey_2d_calib;
+    et.eval_func=@hennessey_2d_eval;
 
     % Create the camera
     et.cameras{1}=camera_make;

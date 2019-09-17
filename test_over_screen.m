@@ -30,9 +30,14 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     % Global variables.
     global is_compensated;
     global is_undistorted;
+    global user_position;
 
     if nargin<2
-        observer_pos_calib=[0 550e-3 350e-3 1]';
+        if (~isempty(user_position))
+            observer_pos_calib=user_position;
+        else
+            observer_pos_calib=[0 550e-3 350e-3 1]';
+        end
     end
     if nargin<3
         observer_pos_test=observer_pos_calib;
