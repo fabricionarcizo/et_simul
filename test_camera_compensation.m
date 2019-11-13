@@ -55,7 +55,7 @@ function test_camera_compensation(method, compensate, undistort)
     end
 
     % Define the eye camera location in the world coordinate system.
-    %eye_camera_position = [0e-3 450e-3 150e-3];
+    eye_camera_position = [0e-3 450e-3 150e-3];
     %eye_camera_position = [0e-3 0e-3 200e-3];
 
     % Define the user location in the world coordinate system.

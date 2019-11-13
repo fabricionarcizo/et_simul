@@ -27,7 +27,7 @@ function interpolate_test(test_type)
 %    <http://www.gnu.org/licenses/>.
 
     if nargin<1
-        test_type='screen';
+        test_type='real';
     end
 
     et=interpolate_make();
@@ -35,5 +35,9 @@ function interpolate_test(test_type)
     if strcmp(test_type, 'screen')
         test_over_screen(et);
     else
-        test_over_observer(et);
+        if strcmp(test_type, 'real')
+            test_real_data(et);
+        else
+            test_over_observer(et);
+        end
     end

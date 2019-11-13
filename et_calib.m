@@ -109,5 +109,8 @@ function et = et_calib(et, e)
         calib_data{i}.e=e;
     end
 
+    % Add the calibration information to the eye tracker structure.
+    et.calib_data = calib_data;
+    
     % Calibration
     et=feval(et.calib_func, et, calib_data);

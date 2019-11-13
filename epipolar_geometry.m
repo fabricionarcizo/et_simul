@@ -1,7 +1,7 @@
-function epipolar_geometry(et, e) 
+function epipolar_geometry(et) 
 %  epipolar_geometry  Computes the epipolar geometry of the calibration data
-%    epipolar_geometry(et, e) calculates the epipolar geometry between the
-%    pupils and the calibration targets and vice-versa. Assuming the eye and the
+%    epipolar_geometry(et) calculates the epipolar geometry between the pupils
+%    and the calibration targets and vice-versa. Assuming the eye and the
 %    screen/scene as a stereo vision system, we can estimate the eye camera
 %    location (i.e. the epipole) using the epipolar geometry.
 
@@ -36,18 +36,13 @@ function epipolar_geometry(et, e)
         targets(1:2, :) = et.calib_points;
 
         for i=1:N
-            % Look at a target on the screen
-            e=eye_look_at(e, [targets(1, i) 0 targets(2, i) 1]');
-
-            % Take a photo from the eye
-            camimg = camera_take_image(et.cameras{1}, e, et.lights);
-
             % Get the current pupil center
-            pupils(1:2, i) = camimg.pc;
+            pc = et.calib_data{i}.camimg{1}.pc;
+            pupils(1:2, i) = pc;
 
             % Eye camera compensation method.
             if (~isempty(is_compensated) && is_compensated)
-                pupils(:, i) = pupil_compensation(et, camimg.pc);
+                pupils(:, i) = pupil_compensation(et, pc);
             end
         end
 

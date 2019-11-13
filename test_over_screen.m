@@ -138,7 +138,7 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     end
 
     % Show the epipolar geometry.
-    epipolar_geometry(et, e);
+    epipolar_geometry(et);
 
     % Output eye measurements
     fprintf('Corneal radius: %.3g mm\n',...
