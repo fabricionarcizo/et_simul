@@ -1,4 +1,4 @@
-function errors=test_real_data(et)
+    function errors=test_real_data(et)
 %  test_over_screen Computes gaze error at different gaze positions on screen
 %    test_over_screen(et, observer_pos_calib, observer_pos_test, r_cornea,
 %    r_pc) tests the eye tracker 'et' by sweeping the gaze position across the
@@ -117,11 +117,22 @@ function errors=test_real_data(et)
         S = screen_mm_y / screen_px_y;
         D = 550;
 
-        errs_deg = zeros(1, length(errs_px));
+        output_data = zeros(10, length(errs_px));
+        errs_x = U(:)';
+        errs_y = V(:)';
         for i = 1:length(errs_px)
-            errs_deg(i) = (180/pi)*2*atan(((errs_px(i)/2)*S)/D);
+            output_data( 1, i) = target_x(i);
+            output_data( 2, i) = target_y(i);
+            output_data( 3, i) = errs_x(i) + target_x(i);
+            output_data( 4, i) = errs_y(i) + target_y(i);
+            output_data( 5, i) = errs_x(i);
+            output_data( 6, i) = errs_y(i);
+            output_data( 7, i) = errs_px(i);
+            output_data( 8, i) = (180/pi)*2*atan(((errs_x(i)/2)*S)/D);
+            output_data( 9, i) = (180/pi)*2*atan(((errs_y(i)/2)*S)/D);
+            output_data(10, i) = (180/pi)*2*atan(((errs_px(i)/2)*S)/D);
         end
-        errors.deg=compute_error_statistics(errs_deg(:));
+        errors.deg=compute_error_statistics(output_data(10, :));
 
         title(sprintf(...
             'Maximum Error: %.2g° - Mean Error: %.2g° - Standard Deviation: %.2g°', ...
@@ -140,7 +151,7 @@ function errors=test_real_data(et)
 
         % Save the gaze error in degrees.
         filename = sprintf('%s/%s_error.csv', filepath, number);
-        csvwrite(filename, errs_deg');
+        csvwrite(filename, output_data');
 
         % Save the statistics in degrees.
         filename = sprintf('%s/%s_results.mat', filepath, number);
