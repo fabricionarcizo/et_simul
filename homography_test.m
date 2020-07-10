@@ -26,7 +26,7 @@ function homography_test(test_type)
 %    <http://www.gnu.org/licenses/>.
 
     if nargin<1
-        test_type='real';
+        test_type='screen';
     end
 
     et=homography_make();

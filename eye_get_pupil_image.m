@@ -37,5 +37,6 @@ function X=eye_get_pupil_image(e, c, N)
         end
     end
 
-    [X,dists,valid]=camera_project(c, X);
-    X=X(:,valid);
+    %[X,dists,valid]=camera_project(c, X);
+    %X=X(:,valid);
+    X = get_feature_image(X, c);

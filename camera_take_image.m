@@ -41,7 +41,8 @@ function camimg=camera_take_image(camera, e, lights)
         if isempty(cr_3d)
             cr{k}=[];
         else
-            cr{k}=camera_project(camera, cr_3d);
+            %cr{k}=camera_project(camera, cr_3d);
+            cr{k}=get_feature_image(cr_3d, camera);
             if any(isnan(cr{k}))
                 cr{k}=[];
             end
