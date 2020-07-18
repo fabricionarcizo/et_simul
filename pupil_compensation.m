@@ -21,4 +21,6 @@ function pupil = pupil_compensation(et, pc)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
-    pupil = et.state.Ten * [pc(1)^2 pc(2)^2 pc(1)*pc(2) pc(1) pc(2) 1]';
+    pupil = et.state.M * [pc(1); pc(2); 1];
+    pupil = pupil / pupil(3);
+%    pupil = et.state.T * pupil;

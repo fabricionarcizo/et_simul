@@ -19,32 +19,47 @@ function [et, pupils] = camera_location_compensation(et, pupils)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
-    % Calibration data
-    N = size(et.calib_points, 2);
-    targets = ones(3, N);
+    % Global variables.
+    global rvc_cam;
 
-    % Second-order polynomial
-    X = ones(6, N);
-    for i=1:N
-        pc = pupils(:, i);
-        X(:, i) = [pc(1)^2 pc(2)^2 pc(1)*pc(2) pc(1) pc(2) 1]';
-    end
+    % Normalized space.
+    unit = mkgrid(3, 1, 'pose', SE3(0.5, 0.5, 1.0));
 
-    % Targets in the normalized plane
-    targets(1, 1:3:N) = -1;
-    targets(1, 2:3:N) = 0;
-    targets(2, 1:3) = -1;
-    targets(2, 4:6) = 0;
+    % Camera resolution.
+    w = rvc_cam.npix(1);
+    h = rvc_cam.npix(2);
 
-    % Fit data
-    et.state.Ten = targets / X;
+    % Projecion matrix 2D -> 3D.
+    A1 = [1 0 -w/2; 0 1 -h/2; 0, 0, 0; 0, 0, 1];
 
-    % Fill out the pupil matrix
-    for i=1:N
+    % R - rotation matrix.
+    R = eye(4);
+    R(1:3, 1:3) = rvc_cam.estpose(unit, pupils(1:2, :)).R';
 
-        % Get the pupil center for each calibration point and normalize it
-        pc = pupils(:, i);
-        pc = et.state.Ten * [pc(1)^2 pc(2)^2 pc(1)*pc(2) pc(1) pc(2) 1]';
+    % Camera matrix.
+    Kcam = rvc_cam.K;
 
-        pupils(:, i) = [pc(1:2); 1];
-    end
+    % T - translation matrix.
+    T = eye(4);
+    T(3, 4) = Kcam(1, 1);
+
+    % K - intrinsic matrix.
+    K = eye(3, 4);
+    K(1:3, 1:3) = Kcam;
+
+    % Inverse Perspective Mapping.
+    et.state.M = K * (T * (R * A1));
+%{
+    % Midpoint
+    q = pupils(:, 5);
+    q = et.state.M * q;
+    q = q / q(3);
+
+    et.state.T = eye(3);
+    et.state.T(1, 3) = (w/2) - q(1);
+    et.state.T(2, 3) = (h/2) - q(2);
+%}
+    % Transformed points.
+    p = et.state.M * pupils;
+    pupils = bsxfun(@rdivide, p, p(3, :));
+%    pupils = et.state.T * pupils;

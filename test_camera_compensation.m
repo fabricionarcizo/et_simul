@@ -55,8 +55,6 @@ function test_camera_compensation(method, compensate, undistort)
     end
 
     % Define the eye camera location in the world coordinate system.
-    %eye_camera_position = [0e-3 450e-3 150e-3];
-    %eye_camera_position = [0e-3 0e-3 200e-3];
     eye_camera_position = [0e-3 0e-3 0e-3];
 
     % Define the user location in the world coordinate system.
@@ -66,13 +64,7 @@ function test_camera_compensation(method, compensate, undistort)
     is_glint_normalization = false;
 
     % Define the polynomial used in the simulation.
-    %polynomial = @(x, y) [x*y x y 1]'; % Hennessey et al. (2008)
-    %polynomial = @(x, y) [x 1; y 1]'; % Hoorman et al. (2008)
     polynomial = @(x, y) [x^2 y^2 x*y x y 1]'; % Cerrolaza et al. (2008)
-    %polynomial = @(x, y) [x^2*y^2 x^2 y^2 x*y x y 1]'; % Second-order
-    %polynomial = @(x, y) [x*y x y 1; y^2 x y 1]'; % Zhu and Ji (2005)
-    %polynomial = @(x, y) [x^2 x y 1 0; x^2*y x^2 x*y y 1]'; % Cerrolaza and Villanueva (2008).
-    %polynomial = @(x, y) [1 x x^3 y^2 x*y 0 0; 1 x x^2 y y^2 x*y x^2*y]'; % Blignaut and Wium (2013).
 
     % Execute the gaze estimation method.
     feval(method);

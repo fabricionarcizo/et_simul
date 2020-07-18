@@ -30,5 +30,4 @@ function pixels=get_feature_image(feature, c)
             'pose', SE3(c.trans) * SE3.Ry(pi));
     end
 
-    pixels = [feature(1, :); feature(3, :); feature(2, :)];
-    pixels = rvc_cam.project(pixels);
+    pixels = rvc_cam.project(feature);
