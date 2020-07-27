@@ -21,6 +21,14 @@ function pupil = pupil_compensation(et, pc)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
-    pupil = et.state.M * [pc(1); pc(2); 1];
-    pupil = pupil / pupil(3);
-%    pupil = et.state.T * pupil;
+    % Global variables.
+    global polynomial;
+
+    % Get the polynomial equation.
+    if (~isempty(polynomial))
+        equation = polynomial;
+    else
+        equation = @(x, y) [1 x y x*y x^2 y^2]';
+    end
+    
+    pupil = et.state.Ten * equation(pc(1), pc(2));

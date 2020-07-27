@@ -20,46 +20,41 @@ function [et, pupils] = camera_location_compensation(et, pupils)
 %    <http://www.gnu.org/licenses/>.
 
     % Global variables.
-    global rvc_cam;
+    global polynomial;
 
-    % Normalized space.
-    unit = mkgrid(3, 1, 'pose', SE3(0.5, 0.5, 1.0));
+    % Get the polynomial equation.
+    if (~isempty(polynomial))
+        equation = polynomial;
+    else
+        equation = @(x, y) [1 x y x*y x^2 y^2]';
+    end
 
-    % Camera resolution.
-    w = rvc_cam.npix(1);
-    h = rvc_cam.npix(2);
+    % Calibration data
+    N = size(et.calib_points, 2);
+    targets = ones(3, N);
 
-    % Projecion matrix 2D -> 3D.
-    A1 = [1 0 -w/2; 0 1 -h/2; 0, 0, 0; 0, 0, 1];
+    % Second-order polynomial
+    X = ones(6, N);
+    for i=1:N
+        pc = pupils(:, i);
+        X(:, i) = equation(pc(1), pc(2));
+    end
 
-    % R - rotation matrix.
-    R = eye(4);
-    R(1:3, 1:3) = rvc_cam.estpose(unit, pupils(1:2, :)).R';
+    % Targets in the normalized plane
+    targets(1, 1:3:N) = -1;
+    targets(1, 2:3:N) = 0;
+    targets(2, 1:3) = -1;
+    targets(2, 4:6) = 0;
 
-    % Camera matrix.
-    Kcam = rvc_cam.K;
+    % Fit data
+    et.state.Ten = targets / X;
 
-    % T - translation matrix.
-    T = eye(4);
-    T(3, 4) = Kcam(1, 1);
+    % Fill out the pupil matrix
+    for i=1:N
 
-    % K - intrinsic matrix.
-    K = eye(3, 4);
-    K(1:3, 1:3) = Kcam;
+        % Get the pupil center for each calibration point and normalize it
+        pc = pupils(:, i);
+        pc = et.state.Ten * equation(pc(1), pc(2));
 
-    % Inverse Perspective Mapping.
-    et.state.M = K * (T * (R * A1));
-%{
-    % Midpoint
-    q = pupils(:, 5);
-    q = et.state.M * q;
-    q = q / q(3);
-
-    et.state.T = eye(3);
-    et.state.T(1, 3) = (w/2) - q(1);
-    et.state.T(2, 3) = (h/2) - q(2);
-%}
-    % Transformed points.
-    p = et.state.M * pupils;
-    pupils = bsxfun(@rdivide, p, p(3, :));
-%    pupils = et.state.T * pupils;
+        pupils(:, i) = [pc(1:2); 1];
+    end
