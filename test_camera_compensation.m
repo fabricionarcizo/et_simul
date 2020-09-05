@@ -1,4 +1,4 @@
-function test_camera_compensation(method, compensate, undistort)
+function test_camera_compensation(method, data, compensate, undistort)
 %  test_camera_compensation  Tests the eye camera location compensation method
 %    test_camera_compensation(method) tests the proposed eye camera location
 %    compensation method to reduce the influence of eye camera location in the
@@ -26,6 +26,10 @@ function test_camera_compensation(method, compensate, undistort)
 %    (version 3) along with et_simul in a file called 'COPYING'. If not, see
 %    <http://www.gnu.org/licenses/>.
 
+    % INFO: To use this script, you must install the Robotics Toolbox Matlab
+    % available on https://github.com/petercorke/robotics-toolbox-matlab. Then
+    % you must add the path of common folder (addpath rvctools/common) and start
+    % up the toolbox (startup_rvc).
     % Define the global variables.
     global is_compensated;
     global is_undistorted;
@@ -42,13 +46,17 @@ function test_camera_compensation(method, compensate, undistort)
         method='homography_test';
     end
 
-    if (nargin > 1)
+    if (nargin < 2)
+        data='screen';
+    end
+
+    if (nargin > 2)
         if (strcmp(compensate, 'on'))
             is_compensated = true;
         end
     end
 
-    if (nargin > 2)
+    if (nargin > 3)
         if (strcmp(undistort, 'on'))
             is_undistorted = true;
         end
@@ -67,7 +75,7 @@ function test_camera_compensation(method, compensate, undistort)
     polynomial = @(x, y) [x^2 y^2 x*y x y 1]'; % Cerrolaza et al. (2008)
 
     % Execute the gaze estimation method.
-    feval(method);
+    feval(method, data);
 
     % Clean all current variables.
     clear;
