@@ -31,13 +31,21 @@
     global is_undistorted;
 
     % Search for all eye information data.
-    files = dir('../../05 Data/normalized/*.csv');
+    files = dir('../../02 Data/02_real/01_filtered/01_normalized/*.csv');
+
+    % Get the method name.
+    functions = dbstack;
+    if strncmpi(functions(2).name, 'interpolate', 10)
+        method_name = '00_interpolate';
+    else
+        method_name = '01_homography';
+    end
 
     % Read the calibration data.
     for file = 1:length(files)
 
         % Open the current file and get the eye information.
-        filename = strcat('../../05 Data/normalized/', files(file).name);
+        filename = strcat('../../02 Data/02_real/01_filtered/01_normalized/', files(file).name);
         dataset = readtable(filename);
 
         % Get the calibration data.
@@ -73,42 +81,37 @@
 
         U=zeros(N, M);
         V=zeros(N, M);
+        gaze_x = zeros(N * M);
+        gaze_y = zeros(N * M);
 
         % Show the epipolar geometry.
-        epipolar_geometry(et);
+        % epipolar_geometry(et);
 
         % Gaze estimation.
         camimg=cell(1, length(et.cameras));
         for i=1:(M * N)
 
             % Target ID.
-            id = ceil(i / 1) - 1;
+            id = i - 1;
 
             % Organize the eye feature data.
             camimg{1}.pc = [pupil_x(i); pupil_y(i)];
 
             % Gaze estimation.
             gaze = feval(et.eval_func, et, camimg);
+            gaze_x(i) = gaze(1);
+            gaze_y(i) = gaze(2);
 
             % Calculate the indexes.
-            j = floor(id / 7) + 1;
-            k = mod(id, 7) + 1;
+            j = floor(id / M) + 1;
+            k = mod(id, M) + 1;
 
             % Calculate the error.
-            U(j, k) = U(j, k) + gaze(1) - target_x(i);
-            V(j, k) = V(j, k) + gaze(2) - target_y(i);
+            U(j, k) = gaze(1) - target_x(i);
+            V(j, k) = gaze(2) - target_y(i);
 
         end
         fprintf('\n');
-
-        % Plot gaze error
-        fig = figure(3);
-        surf(X, Y, sqrt(U.^2+V.^2));
-        errs_px=reshape(sqrt(U.^2+V.^2), 1, []);
-        errors.px=compute_error_statistics(errs_px);
-        fprintf('Maximum error %g px\n', errors.px.max);
-        fprintf('Mean error %g px\n', errors.px.mean);
-        fprintf('Standard deviation %g px\n', errors.px.std);
 
         % Compute error in degrees.
         screen_px_y = 1080;
@@ -117,22 +120,47 @@
         S = screen_mm_y / screen_px_y;
         D = 550;
 
-        output_data = zeros(10, length(errs_px));
-        errs_x = U(:)';
-        errs_y = V(:)';
-        for i = 1:length(errs_px)
-            output_data( 1, i) = target_x(i);
-            output_data( 2, i) = target_y(i);
-            output_data( 3, i) = errs_x(i) + target_x(i);
-            output_data( 4, i) = errs_y(i) + target_y(i);
-            output_data( 5, i) = errs_x(i);
-            output_data( 6, i) = errs_y(i);
-            output_data( 7, i) = errs_px(i);
-            output_data( 8, i) = (180/pi)*2*atan(((errs_x(i)/2)*S)/D);
-            output_data( 9, i) = (180/pi)*2*atan(((errs_y(i)/2)*S)/D);
-            output_data(10, i) = (180/pi)*2*atan(((errs_px(i)/2)*S)/D);
+        % Plot gaze error
+        fig = figure(1);
+        surf(X, Y, (180/pi)*2*atan(((sqrt(U.^2+V.^2)/2)*S)/D));
+        
+        % Define the plot limits.
+        xlim([min(X) max(X)]);
+        set(gca, 'XTick', X);
+        xlabel('X-axis (pixels)');
+        
+        ylim([min(Y) max(Y)]);
+        set(gca, 'YTick', Y);
+        ylabel('Y-axis (pixels)');
+
+        zlim([0 5]);
+        zlabel('Z-axis (degrees)');
+        
+        errs_xy=reshape(sqrt(U.^2+V.^2)', 1, []);
+        errors.px=compute_error_statistics(errs_xy);
+        fprintf('Maximum error %g px\n', errors.px.max);
+        fprintf('Mean error %g px\n', errors.px.mean);
+        fprintf('Standard deviation %g px\n', errors.px.std);
+
+        % CSV file.
+        sample = zeros(length(errs_xy), 10);
+        u = U';
+        errs_x = u(:)';
+        v = V';
+        errs_y = v(:)';
+        for i = 1:length(errs_xy)
+            sample(i,  1) = target_x(i);
+            sample(i,  2) = target_y(i);
+            sample(i,  3) = target_x(i) + errs_x(i);
+            sample(i,  4) = target_y(i) + errs_y(i);
+            sample(i,  5) = errs_x(i);
+            sample(i,  6) = errs_y(i);
+            sample(i,  7) = errs_xy(i);
+            sample(i,  8) = (180/pi)*2*atan(((errs_x(i)/2)*S)/D);
+            sample(i,  9) = (180/pi)*2*atan(((errs_y(i)/2)*S)/D);
+            sample(i, 10) = (180/pi)*2*atan(((errs_xy(i)/2)*S)/D);
         end
-        errors.deg=compute_error_statistics(output_data(10, :));
+        errors.deg=compute_error_statistics(sample(:, 10));
 
         title(sprintf(...
             'Maximum Error: %.2g° - Mean Error: %.2g° - Standard Deviation: %.2g°', ...
@@ -140,18 +168,24 @@
 
         number = substr(files(file).name, 1, 4);
         if is_undistorted
-            filepath = '../../05 Data/real_data/distortion';
+            filepath = sprintf('../../02 Data/02_real/02_data_analysis/%s/02_distortion', method_name);
         else
             if is_compensated
-                filepath = '../../05 Data/real_data/camera';
+                filepath = sprintf('../../02 Data/02_real/02_data_analysis/%s/01_camera', method_name);
             else
-                filepath = '../../05 Data/real_data/original';
+                filepath = sprintf('../../02 Data/02_real/02_data_analysis/%s/00_original', method_name);
             end
         end
 
+        % Define the output matrix.
+        colNames = {'target_x', 'target_y', 'gaze_x', 'gaze_y', 'error_px_x', ...
+            'error_px_y', 'error_px_xy', 'error_deg_x', 'error_deg_y', ...
+            'error_deg_xy'};
+        output_data = array2table(sample, 'VariableNames', colNames);
+
         % Save the gaze error in degrees.
         filename = sprintf('%s/%s_error.csv', filepath, number);
-        csvwrite(filename, output_data');
+        writetable(output_data, filename);
 
         % Save the statistics in degrees.
         filename = sprintf('%s/%s_results.mat', filepath, number);

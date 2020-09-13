@@ -45,6 +45,12 @@ function et=interpolate_make()
     % Create lights
     et.lights{1}=light_make;
     et.lights{1}.pos=[ 200e-3 0 350e-3 1]';
+    et.lights{2}=light_make;
+    et.lights{2}.pos=[-200e-3 0 350e-3 1]';
+    et.lights{3}=light_make;
+    et.lights{3}.pos=[-200e-3 0  50e-3 1]';
+    et.lights{4}=light_make;
+    et.lights{4}.pos=[ 200e-3 0  50e-3 1]';
 
     % Calibration points are at the edges of the monitor, halfway between the 
     % edges and the center of the monitor

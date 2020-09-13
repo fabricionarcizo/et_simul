@@ -38,6 +38,10 @@ function interpolate_test(test_type)
         if strcmp(test_type, 'real')
             test_real_data(et);
         else
-            test_over_observer(et);
+            if strcmp(test_type, 'simulated')
+                test_simulated_data(et);
+            else
+                test_over_observer(et);
+            end
         end
     end
