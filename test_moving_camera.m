@@ -48,13 +48,13 @@ function test_moving_camera(method, data)
     end
 
     % Define the user location in the world coordinate system.
-    user_position = [0 550e-3 350e-3 1]';
+    user_position = [0 550e-3 200e-3 1]';
 
     % Define the camera positions grid.
-    N=5;
-    X=linspace(-200e-3,  200e-3,  N);
-    Y=linspace(  50e-3,  350e-3,  N);
-    Z=linspace( 500e-3,    0e-3, 11);
+    N=21;
+    X=linspace(-200e-3,  200e-3, N);
+    Y=linspace(  50e-3,  350e-3, N);
+    Z=linspace( 500e-3,    0e-3, N);
 
     file_number = 0;
     for i=1:length(X)

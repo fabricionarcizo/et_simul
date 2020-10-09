@@ -122,7 +122,7 @@ function test_simulated_data(et, observer_pos_calib, ...
 
     % Save the simulated eye feature.
     filepath = sprintf('../../02 Data/01_simulated/00_raw/00_eye_feature');
-    filename = sprintf('%s/%04.0f_X%+04.0f_Y%+04.0f_Z%+04.0f_dataset.csv', filepath, ...,
+    filename = sprintf('%s/%05.0f_X%+04.0f_Y%+04.0f_Z%+04.0f_dataset.csv', filepath, ...,
         file_number, eye_camera_position(1) * 1000, eye_camera_position(3) * 1000, ...,
         eye_camera_position(2) * 1000);
     writetable(output_data, filename);
@@ -133,7 +133,7 @@ function test_simulated_data(et, observer_pos_calib, ...
 
     % Save the normalized eye feature.
     filepath = sprintf('../../02 Data/01_simulated/01_filtered/00_normalized');
-    filename = sprintf('%s/%04.0f_X%+04.0f_Y%+04.0f_Z%+04.0f_dataset.csv', filepath, ...,
+    filename = sprintf('%s/%05.0f_X%+04.0f_Y%+04.0f_Z%+04.0f_dataset.csv', filepath, ...,
         file_number, eye_camera_position(1) * 1000, eye_camera_position(3) * 1000, ...,
         eye_camera_position(2) * 1000);
     writetable(output_data, filename);
