@@ -57,7 +57,7 @@ function errors=test_over_screen(et, observer_pos_calib, ...
     et=et_calib(et, e);
 
     % Define screen positions grid
-    N=16;
+    N=21;
     X=linspace(-200e-3, 200e-3, N);
     Y=linspace(50e-3, 350e-3, N);
 

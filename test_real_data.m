@@ -118,7 +118,7 @@
         screen_mm_y = 298.89;
 
         S = screen_mm_y / screen_px_y;
-        D = 550;
+        D = 450;
 
         % Plot gaze error
         fig = figure(1);
@@ -188,12 +188,12 @@
         writetable(output_data, filename);
 
         % Save the statistics in degrees.
-        filename = sprintf('%s/%s_results.mat', filepath, number);
-        save(filename, 'errors');
+        % filename = sprintf('%s/%s_results.mat', filepath, number);
+        % save(filename, 'errors');
 
         % Save the gaze error image.
-        filename = sprintf('%s/%s_error.png', filepath, number);
-        saveas(fig, filename);
+        % filename = sprintf('%s/%s_error.png', filepath, number);
+        % saveas(fig, filename);
     end
 
 function stats=compute_error_statistics(errs)

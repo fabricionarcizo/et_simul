@@ -41,8 +41,8 @@ function camimg=camera_take_image(camera, e, lights)
         if isempty(cr_3d)
             cr{k}=[];
         else
-            %cr{k}=camera_project(camera, cr_3d);
-            cr{k}=get_feature_image(cr_3d, camera);
+            cr{k}=camera_project(camera, cr_3d);
+            %cr{k}=get_feature_image(cr_3d, camera);
             if any(isnan(cr{k}))
                 cr{k}=[];
             end
@@ -53,7 +53,7 @@ function camimg=camera_take_image(camera, e, lights)
     % Find the PC
     [camimg.pupil, camimg.pc, camimg.ellipse]=get_pc(e, camera);
 
-function [pupil, pc, ellipse]=get_pc(e, c);
+function [pupil, pc, ellipse]=get_pc(e, c)
 % get_pc  Determines position of pupil in camera image
 %   pc = get_pc(e, c) finds the image of the pupil border in the camera image
 %   (returned as 'pupil'), then fits an ellipse to those points and returns

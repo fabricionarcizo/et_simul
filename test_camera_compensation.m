@@ -37,9 +37,13 @@ function test_camera_compensation(method, data, compensate, undistort)
     global user_position;
     global is_glint_normalization;
     global polynomial;
+    global FEAT_REFRACTION;
+    global FEAT_FOVEA_DISPLACEMENT;
 
     is_compensated = false;
     is_undistorted = false;
+    FEAT_REFRACTION = 1;
+    FEAT_FOVEA_DISPLACEMENT = 1;
 
     % Adjust the arguments.
     if (nargin < 1)
@@ -66,7 +70,7 @@ function test_camera_compensation(method, data, compensate, undistort)
     eye_camera_position = [0e-3 0e-3 0e-3];
 
     % Define the user location in the world coordinate system.
-    user_position = [0 550e-3 350e-3 1]';
+    user_position = [0 550e-3 200e-3 1]';
 
     % Remove the glint normalization.
     is_glint_normalization = false;

@@ -1,4 +1,4 @@
-function test_moving_camera(method, data)
+function test_moving_camera(method)
 %  test_moving_camera  Tests the eye camera location compensation method
 %    test_moving_camera(method) tests the proposed eye camera location
 %    compensation method to reduce the influence of eye camera location in the
@@ -31,20 +31,26 @@ function test_moving_camera(method, data)
     % you must add the path of common folder (addpath rvctools/common) and start
     % up the toolbox (startup_rvc).
     % Define the global variables.
+    global is_compensated;
+    global is_undistorted;
     global eye_camera_position;
     global user_position;
     global file_number;
     global FEAT_REFRACTION;
+    global FEAT_FOVEA_DISPLACEMENT;
+    global is_glint_normalization;
 
+    is_compensated = false;
+    is_undistorted = false;
     FEAT_REFRACTION = 1;
+    FEAT_FOVEA_DISPLACEMENT = 1;
+
+    % Remove the glint normalization.
+    is_glint_normalization = false;
 
     % Adjust the arguments.
     if (nargin < 1)
         method='homography_test';
-    end
-
-    if (nargin < 2)
-        data='simulated';
     end
 
     % Define the user location in the world coordinate system.
@@ -54,7 +60,7 @@ function test_moving_camera(method, data)
     N=21;
     X=linspace(-200e-3,  200e-3, N);
     Y=linspace(  50e-3,  350e-3, N);
-    Z=linspace( 500e-3,    0e-3, N);
+    Z=linspace( 400e-3,    0e-3, N);
 
     file_number = 0;
     for i=1:length(X)
@@ -62,10 +68,11 @@ function test_moving_camera(method, data)
             for k=1:length(Z)
                 % Define the eye camera location in the world coordinate system.
                 eye_camera_position = [X(i) Z(k) Y(j)];
+                disp(eye_camera_position);
 
                 % Execute the gaze estimation method.
                 fprintf('%03d: ', file_number);
-                feval(method, data);
+                feval(method, 'generate');
                 file_number = file_number + 1;
             end
         end
